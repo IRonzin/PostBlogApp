@@ -9,3 +9,14 @@ When a post is uploaded, it is published to the Redis channel "Upload," to which
 When a post is viewed, the Web API passes the request to the Blog Service, which then queries Mongo1 for the requested title. If it is found, before the post is returned to the Web API, the Blog Service publishes the title to the "Analytics" channel in Redis. This way, the Analytics Worker can asynchronously check to see if the post has been viewed before -- if it has, the number of views is increased by 1, if it hasn't, the title is entered into the Mongo2 instance for analytics tracking. 
 
 Finally, the Web API also has a route to handle a request for the number of times a given post has been viewed, which it forwards to the Analytics Service, which then queries Mongo2 and returns the result. 
+
+kubectl logs web-api-7cd95d6d9c-5srs4 - логи
+kubectl get ingress - ингресс
+kubectl get svc - сервисы Kuber
+minikube -n kong service kong-proxy - проксирование эндпоинта в локалхост (нужно только для миникуба)
+kubectl get svc -n kong - сервисы Kuber в пространстве kong (ingress)
+helm template . --values values.yaml | kubectl apply -f - //// последняя тире нужна - команда для обновления микросервисов через helm
+
+https://velocity.tech/blog/build-a-microservice-based-application-in-golang-with-gin-redis-and-mongodb-and-deploy-it-in-k8s
+
+
