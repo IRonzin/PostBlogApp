@@ -16,6 +16,7 @@ kubectl get svc - сервисы Kuber
 minikube -n kong service kong-proxy - проксирование эндпоинта в локалхост (нужно только для миникуба)
 kubectl get svc -n kong - сервисы Kuber в пространстве kong (ingress)
 helm template . --values values.yaml | kubectl apply -f - //// последняя тире нужна - команда для обновления микросервисов через helm
+protoc --go_out=C:\Users\VladimirRonzin\source\repos\PostBlogApp\go-gin-redis-mongodb\redis-gin-mongo\src\db_worker .\db_worker.proto - генерация структур proto
 
 https://velocity.tech/blog/build-a-microservice-based-application-in-golang-with-gin-redis-and-mongodb-and-deploy-it-in-k8s
 
