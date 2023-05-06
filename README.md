@@ -19,4 +19,6 @@ helm template . --values values.yaml | kubectl apply -f - //// последня�
 
 https://velocity.tech/blog/build-a-microservice-based-application-in-golang-with-gin-redis-and-mongodb-and-deploy-it-in-k8s
 
+1. web-api sends a new post to db-worker with Redis queue using Protobuf (proto3)
+
 
