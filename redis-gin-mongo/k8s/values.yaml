@@ -1,6 +1,6 @@
 webAPI:
   containers:
-    image: jdvincent/gin-redis-web-api:latest
+    image: ironzin/blog-post-web-api:1.0.0
   
   envVars:
     REDIS_HOST: redis
@@ -18,7 +18,7 @@ webAPI:
 dbWorker:
 
   containers:
-    image: jdvincent/gin-redis-db-worker:latest
+    image: ironzin/blog-post-db_worker:1.0.0
   
   envVars:
     REDIS_HOST: redis

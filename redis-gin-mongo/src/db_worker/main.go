@@ -2,14 +2,16 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+	//"encoding/json"
 	"fmt"
 	"os"
 
+	pbWorker "example.com/m/v2/db_worker/example.com/m/v2/db_worker"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	protoBuf "google.golang.org/protobuf/proto"
 )
 
 type BlogPost struct {
@@ -32,9 +34,10 @@ var (
 	redis_uri  = fmt.Sprintf("redis://%s:%s/0", redis_host, redis_port)
 )
 
-func insertDoc(mongoClient *mongo.Client, post BlogPost) (*mongo.InsertOneResult, error) {
+func insertDoc(mongoClient *mongo.Client, post *pbWorker.BlogPost) (*mongo.InsertOneResult, error) {
 	coll := mongoClient.Database(databaseName).Collection(collectionName)
-	result, err := coll.InsertOne(context.TODO(), post)
+	mongoPostDto := BlogPost{Title: post.Title, Author: post.Author, Body: post.Body}
+	result, err := coll.InsertOne(context.TODO(), mongoPostDto)
 
 	if err != nil {
 		log.Error().Err(err).Msg("error occured while inserting doc to mongo")
@@ -66,13 +69,14 @@ func main() {
 			continue
 		}
 
-		post := BlogPost{}
-		err = json.Unmarshal([]byte(result[1]), &post)
+		post := &pbWorker.BlogPost{}
+		err = protoBuf.Unmarshal([]byte(result[1]), post)
 		if err != nil {
-			log.Error().Err(err).Msg("error occured while decoding response into Post object")
+			log.Error().Err(err).Msg("error occured while decoding new post bytes by protobuf")
+		} else {
+			log.Info().Msg("decoding new post bytes by protobuf is successfully finished")
 		}
 		insertDoc(mongoClient, post)
 		fmt.Println(result)
-
 	}
 }

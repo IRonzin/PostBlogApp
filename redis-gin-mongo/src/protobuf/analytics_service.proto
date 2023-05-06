@@ -1,0 +1,9 @@
+syntax = "proto3";
+package analytics_service;
+
+option go_package = "example.com/m/v2/protobuf";
+
+message AnalitycsData{
+    string title = 1;
+	int32 views = 2;
+}

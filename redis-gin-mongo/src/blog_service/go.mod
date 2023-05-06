@@ -1,4 +1,4 @@
-module example.com/m/v2
+module example.com/m/v2/blog_service
 
 go 1.18
 

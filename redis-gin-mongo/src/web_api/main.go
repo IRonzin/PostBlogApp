@@ -6,8 +6,12 @@ import (
 	"net/http"
 	"os"
 
+	pbWorker "example.com/m/v2/web_api/example.com/m/v2/db_worker"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
+	protoBuf "google.golang.org/protobuf/proto"
+
+	//redisProto "github.com/go-redis/redis/v8/internal/proto"
 	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -89,6 +93,27 @@ func newPost(ctx *gin.Context, t string, a string, b string) {
 	})
 }
 
+/*func getPostViews(ctx *gin.Context) {
+	title := ctx.Param("title")
+	address := fmt.Sprintf("http://%s:%s/views/%s", analytics_service_host, analytics_service_port, title)
+	resp, err := http.Get(address)
+	if err != nil {
+		log.Error().Err(err).Msg("error occured while fetching views from views service")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Get views failed"})
+		return
+	}
+	defer resp.Body.Close()
+	val := &Doc{}
+	decoder := json.NewDecoder(resp.Body)
+	err = decoder.Decode(val)
+	if err != nil {
+		log.Error().Err(err).Msg("error occured while decoding response into Doc object")
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{"error": "Get views failed"})
+		return
+	}
+	ctx.JSON(http.StatusOK, val)
+}*/
+
 func getPostViews(ctx *gin.Context) {
 	title := ctx.Param("title")
 	address := fmt.Sprintf("http://%s:%s/views/%s", analytics_service_host, analytics_service_port, title)
@@ -144,21 +169,28 @@ func main() {
 		title := ctx.PostForm("title")
 		author := ctx.PostForm("author")
 		body := ctx.PostForm("body")
-		new_post := BlogPost{Title: title, Author: author, Body: body}
-		payload, err := json.Marshal(new_post)
+		//new_post := BlogPost{Title: title, Author: author, Body: body}
+		new_post := pbWorker.BlogPost{
+			Title:  title,
+			Author: author,
+			Body:   body}
+		payload, err := protoBuf.Marshal(&new_post)
+		if err != nil {
+			log.Error().Err(err).Msg("error occured while transform new post by protobuf")
+			ctx.JSON(http.StatusUnprocessableEntity, gin.H{"error": "Upload failed"})
+			return
+		} else {
+			log.Info().Msg("New blog post has been transformed by protobuf.")
+		}
+		/*err = protoBuf.Unmarshal(payload, &new_post)
 		if err != nil {
 			log.Error().Err(err).Msg("error occured while decoding response into Doc object")
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{"error": "Upload failed"})
 			return
-		}
-		err = json.Unmarshal(payload, &new_post)
-		if err != nil {
-			log.Error().Err(err).Msg("error occured while decoding response into Doc object")
-			ctx.JSON(http.StatusUnprocessableEntity, gin.H{"error": "Upload failed"})
-			return
-		}
+		}*/
+
 		if err := rdb.RPush(ctx, "queue:new-post", payload).Err(); err != nil {
-			log.Error().Err(err).Msg("error occured while decoding response into Doc object")
+			log.Error().Err(err).Msg("error occured while RPush new post into Redis queue")
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{"error": "Upload failed"})
 		}
 
